@@ -1,0 +1,6 @@
+.badge {
+    margin-left: 3px;
+}
+.d-grid .g-col-6 {
+	grid-column: auto/span 6;
+}
