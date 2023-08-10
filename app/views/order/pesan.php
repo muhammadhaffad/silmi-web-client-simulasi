@@ -69,20 +69,21 @@
                         </table>
                     </div>
                 </div>
+                <form id="form-placeorder" action="<?=BASEURL.'/order/pesan_order/'.$data['order']['idorder']?>" method="post"></form>
                 <h3>Pengiriman</h3>
                 <div class="card mb-3">
                     <div class="card-body">
-                        <select class="form-select" aria-label="Default select example">
+                        <select form="form-placeorder" name="id_kurir" class="form-select" aria-label="Default select example">
                             <option selected>--Pilih Kurir Pengiriman--</option>
-                            <option value="15000">JNE - Rp.15.000</option>
+                            <option value="1">JNE - Rp.5.000</option>
                         </select>
                     </div>
                 </div>
                 <h3>Pembayaran</h3>
-                <select class="form-select mb-5" aria-label="Default select example">
+                <select form="form-placeorder" name="bank" class="form-select mb-5" aria-label="Default select example">
                     <option selected>--Pilih Metode Pembayaran--</option>
-                    <option value="15000">Bank Transfer</option>
-                    <option value="15000">OVO</option>
+                    <option value="BRI">BRI</option>
+                    <option value="BNI">BNI</option>
                 </select>
             </div>
             <div style="width: 30%;">
@@ -90,8 +91,16 @@
                     <div class="card-body">
                         <h5 class="fw-bold">Total</h5>
                         <hr>
-                        <h5 class="fw-bold mb-4" align="right">Rp.150.000</h5>
-                        <button class="btn btn-success fw-bold w-100">Pesan</button>
+                        <?php
+                            $total = 0;
+                            foreach ($data['produk'] as $produk) {
+                                foreach ($produk['items'] as $produkItem) {
+                                    $total += $produkItem['totalbarangitem'];
+                                }
+                            }
+                        ?>
+                        <h5 class="fw-bold mb-4" align="right"><?=$total?></h5>
+                        <button form="form-placeorder" type="submit" class="btn btn-success fw-bold w-100">Pesan</button>
                     </div>
                 </div>
             </div>

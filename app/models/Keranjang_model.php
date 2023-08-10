@@ -53,4 +53,18 @@ class Keranjang_model {
         $this->db->execute();
         return $this->db->rowCount();
     }
+    public function orderItemKeranjang($idorder) 
+    {
+        $idPelanggan = $_SESSION['idpelanggan'];
+        $query = "insert into tr_orderdetail (idorder, kodebarang, jumlah, diskon, harga, total) select :idorder, kodebarang, jumlah, diskonbarangitem, harga, (harga*jumlah*(1 - diskonbarangitem/100))::integer from v_keranjangpelanggan where idpelanggan = :idpelanggan";
+        $this->db->query($query);
+        $this->db->bind('idorder', $idorder);
+        $this->db->bind('idpelanggan', $idPelanggan);
+        $this->db->execute();
+        $query = "update ms_keranjang set softdelete='1' where idpelanggan=:idpelanggan";
+        $this->db->query($query);
+        $this->db->bind('idpelanggan', $idPelanggan);
+        $this->db->execute();
+        return $this->db->rowCount();
+    }
 }

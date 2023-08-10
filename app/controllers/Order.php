@@ -26,13 +26,21 @@ class Order extends Controller {
         }
         if (!empty($order)) {
             Flasher::setFlash('Informasi berhasil disimpan', '', 'success');
-            header('Location: '.BASEURL.'/order/pesan/'.$order['idorder']);
+            header('Location: '.BASEURL.'/order/rincian/'.$order['idorder']);
             exit;
         } else {
         }
     }
-    public function pesan($idorder) {
+    public function rincian($idorder) {
+        if (empty($idorder)) {
+            header('Location: '.BASEURL.'/order/informasi');
+            exit;
+        }
         $order = $this->model('Order_model')->getOrderPelanggan($idorder);
+        if(empty($order)) {
+            header('Location: '.BASEURL.'/order/informasi');
+            exit;
+        }
         $data['order'] = $this->groupOrder($order);
         $produk = $this->model('Keranjang_model')->getKeranjangPelanggan();
         $produk = $this->cleanKeys($this->groupBarang($produk));
@@ -40,6 +48,24 @@ class Order extends Controller {
         $this->view('templates/header');
         $this->view('order/pesan', $data);
         $this->view('templates/footer');
+    }
+    public function pesan_order($idorder) {
+        $keranjangItemSukses = $this->model('Keranjang_model')->orderItemKeranjang($idorder);
+        /* contoh biaya ongkir */
+        $ongkir = [
+            1 => 5000
+        ];
+        $data = [
+            'id_ekspedisi' => $_POST['id_kurir'],
+            'biayaongkir' => $ongkir[$_POST['id_kurir']],
+            'kodebank' => $_POST['bank']
+        ];
+        $orderSukses = $this->model('Order_model')->placeOrder($idorder, $data);
+        if ($orderSukses > 0) {
+            Flasher::setFlash('Berhasil memesan produk, silahkan melakukan pembayaran', '', 'success');
+            header('Location: '.BASEURL.'/produk');
+            exit;
+        }
     }
     private function cleanKeys(&$array) {
         $array = array_values($array);
