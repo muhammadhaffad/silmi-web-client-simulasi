@@ -15,7 +15,7 @@
                 ?>
                 <p class="mb-0"><?= $kurir[$order['idekspedisi']] ?> - Rp.<?=$order['biayaongkir']?></p>
                 <p class="mb-0">Rp.<?= $order['grandtotal'] ?></p>
-                <a href="<?=BASEURL.'/dashboard/order/'.$order['idorder']?>" class="mt-2 btn btn-primary">Lihat Detail</a>
+                <a href="<?=BASEURL.'/dashboard/order_detail/'.$order['idorder']?>" class="mt-2 btn btn-primary">Lihat Detail</a>
             </div>
         </div>
         <?php endforeach; ?>

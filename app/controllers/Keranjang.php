@@ -6,6 +6,7 @@ class Keranjang extends Controller {
         $data['produk'] = $produk;
         echo json_encode($produk);
         $this->view('templates/header');
+        $this->view('templates/nav');
         $this->view('keranjang/index', $data);
         $this->view('templates/footer');
     }

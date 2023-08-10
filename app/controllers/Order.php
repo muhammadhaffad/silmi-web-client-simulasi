@@ -1,8 +1,8 @@
 <?php
 class Order extends Controller {
     public function index() {
-
         $this->view('templates/header');
+        $this->view('templates/nav');
         $this->view('order/informasi');
         $this->view('templates/footer');
     }
@@ -15,6 +15,7 @@ class Order extends Controller {
         $produk = $this->cleanKeys($this->groupBarang($produk));
         $data['produk'] = $produk;
         $this->view('templates/header');
+        $this->view('templates/nav');
         $this->view('order/informasi', $data);
         $this->view('templates/footer');
     }
@@ -36,7 +37,7 @@ class Order extends Controller {
             header('Location: '.BASEURL.'/order/informasi');
             exit;
         }
-        $order = $this->model('Order_model')->getOrderPelanggan($idorder);
+        $order = $this->model('Order_model')->getOrderPelanggan($idorder, 0);
         if(empty($order)) {
             header('Location: '.BASEURL.'/order/informasi');
             exit;
@@ -46,6 +47,7 @@ class Order extends Controller {
         $produk = $this->cleanKeys($this->groupBarang($produk));
         $data['produk'] = $produk;
         $this->view('templates/header');
+        $this->view('templates/nav');
         $this->view('order/pesan', $data);
         $this->view('templates/footer');
     }

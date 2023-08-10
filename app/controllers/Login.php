@@ -6,9 +6,10 @@ class Login extends Controller {
         $this->view('templates/footer');
     }
     public function auth() {
-        $idpelanggan = $this->model('Auth_model')->auth($_POST);
-        if (!empty($idpelanggan)) {
-            $_SESSION['idpelanggan'] = $idpelanggan['idpelanggan'];
+        $pelanggan = $this->model('Auth_model')->auth($_POST);
+        if (!empty($pelanggan)) {
+            $_SESSION['idpelanggan'] = $pelanggan['idpelanggan'];
+            $_SESSION['namapelanggan'] = $pelanggan['namapelanggan'];
             Flasher::setFlash('Login berhasil!', '', 'success');
             header('Location: '.BASEURL.'/produk');
             exit;

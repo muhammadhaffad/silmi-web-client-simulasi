@@ -8,7 +8,7 @@ class Auth_model {
     }
     public function auth($data)
     {
-        $query = "select idpelanggan from sc_pelanggan where password = :password limit 1";
+        $query = "select * from sc_pelanggan where password = :password limit 1";
         $this->db->query($query);
         $this->db->bind('password', $data['password']);
         return $this->db->single();

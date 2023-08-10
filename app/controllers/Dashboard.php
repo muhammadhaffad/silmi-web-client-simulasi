@@ -5,11 +5,18 @@ class Dashboard extends Controller {
         $this->view('dashboard/home/index');
         $this->view('dashboard/templates/footer');
     }
-    public function order($idorder) {
+    public function order() {
         $orders = $this->groupOrder($this->model('Order_model')->getOrderPelanggan(), 1);
         $data['order'] = $orders;
         $this->view('dashboard/templates/header');
         $this->view('dashboard/order/index', $data);
+        $this->view('dashboard/templates/footer');
+    }
+    public function order_detail($idorder) {
+        $order = $this->groupOrder($this->model('Order_model')->getOrderPelanggan($idorder), 1);
+        $data['order'] = $order;
+        $this->view('dashboard/templates/header');
+        $this->view('dashboard/order/detail', $data);
         $this->view('dashboard/templates/footer');
     }
     private function groupOrder($orders) {

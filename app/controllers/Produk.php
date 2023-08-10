@@ -6,6 +6,7 @@ class Produk extends Controller {
         $produk = $this->groupBarang($produk);
         $data['produk'] = $this->cleanKeys($produk);
         $this->view('templates/header');
+        $this->view('templates/nav');
         $this->view('home/index', $data);
         $this->view('templates/footer');
     }
@@ -17,6 +18,7 @@ class Produk extends Controller {
         $data['produk'] = $this->cleanKeys($produk)[0];
         echo json_encode($data['produk']);
         $this->view('templates/header');
+        $this->view('templates/nav');
         $this->view('produk/detail', $data);
         $this->view('templates/footer');
     }

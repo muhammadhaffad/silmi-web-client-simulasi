@@ -23,13 +23,13 @@
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active" aria-current="page">
+                    <a href="<?=BASEURL.'/dashboard'?>" class="nav-link <?=(preg_match('#/dashboard$#', $_SERVER['REQUEST_URI']))?'active':'text-white'?>" aria-current="page">
                         <i class="bi-house me-2"></i>
                         Home
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link text-white">
+                    <a href="<?=BASEURL.'/dashboard/order'?>" class="nav-link <?=(strpos($_SERVER['REQUEST_URI'], '/dashboard/order'))?'active':'text-white'?>">
                         <i class="bi-table me-2"></i>
                         Pesanan
                     </a>
