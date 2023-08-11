@@ -52,11 +52,61 @@ class Order extends Controller {
         $this->view('templates/footer');
     }
     public function pesan_order($idorder) {
-        $keranjangItemSukses = $this->model('Keranjang_model')->orderItemKeranjang($idorder);
+        $itemKeranjang = $this->model('Keranjang_model')->getKeranjangPelanggan();
+        $data = ['produk' => array_map(function ($item) {
+            return [
+                'kode_produk' => $item['kodebarang'],
+                'jumlah' => $item['jumlah']
+            ];
+        }, $itemKeranjang)];
+        $data = json_encode($data);
+        list($status, $response) = Helper::httpRequestJson('http://localhost/silmi/api/v1/cekstok', $data);
+        $response = json_decode($response);
+        $success = 0;
+        foreach($response->data as $produk) {
+            $rowCount = $this->model('Produk_model')->updateStok($produk->kode_produk, $produk->stok);
+            if ($rowCount > 0) {
+                $success += 1;
+            }
+        }
+        if ($status === 422) {
+            Flasher::setFlash($response->message, '', 'danger');
+            header('Location: '.BASEURL.'/produk');
+            exit;
+        }
+        /* get data order */
+        $order = $this->model('Order_model')->getOrderPelanggan($idorder, 0);
+        if(empty($order)) {
+            header('Location: '.BASEURL.'/order/informasi');
+            exit;
+        }
+        $order = $this->groupOrder($order);
         /* contoh biaya ongkir */
         $ongkir = [
             1 => 5000
         ];
+        $data = [
+            'id_unit' => 'pst',
+            'pengirim' => 'Nama toko distributor',
+            'nama_pelanggan' => $order['namacustomer'],
+            'alamat' => $order['alamat'],
+            'keterangan' => '-',
+            'id_ekspedisi' =>  (int)$_POST['id_kurir'],
+            'biaya_ongkir_db' =>  $ongkir[$_POST['id_kurir']],
+            'no_tlp' => $order['notlp'],
+            'produk_detail' => array_map(function ($item) {
+                return [
+                    'kode_produk' => $item['kodebarang'],
+                    'jumlah' => $item['jumlah']
+                ];
+            }, $itemKeranjang)
+        ];
+        $data = json_encode($data);
+        list($status, $response) = Helper::httpRequestJson('http://localhost/silmi/api/v1/nota/buat', $data);
+        echo json_encode($response);
+        exit;
+        $keranjangItemSukses = $this->model('Keranjang_model')->orderItemKeranjang($idorder);
+        
         $data = [
             'id_ekspedisi' => $_POST['id_kurir'],
             'biayaongkir' => $ongkir[$_POST['id_kurir']],

@@ -1,5 +1,12 @@
 <?php
 class Dashboard extends Controller {
+    public function __construct()
+    {
+        if ($_SESSION['idpelanggan'] == 1) {
+            Flasher::setFlash('Silahkan Login terlebih dahulu!', '', 'danger');
+            header('Location: '.BASEURL.'/produk');
+        }
+    }
     public function index() {
         $this->view('dashboard/templates/header');
         $this->view('dashboard/home/index');

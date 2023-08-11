@@ -4,7 +4,6 @@ class Keranjang extends Controller {
         $produk = $this->model('Keranjang_model')->getKeranjangPelanggan();
         $produk = $this->cleanKeys($this->groupBarang($produk));
         $data['produk'] = $produk;
-        echo json_encode($produk);
         $this->view('templates/header');
         $this->view('templates/nav');
         $this->view('keranjang/index', $data);
@@ -14,6 +13,27 @@ class Keranjang extends Controller {
         $idPelanggan = $_SESSION['idpelanggan'];
         $barang = $this->model('Produk_model')->getBarangItem($_POST['idmodelbarang'], $_POST['produk_item']);
         $stokBarang = array_column($barang, 'stokbarangitem');
+        $data = ['produk' => array_map(function ($item) {
+            return [
+                'kode_produk' => $item['kodebarang'],
+                'jumlah' => (int)($_POST['jumlah'])
+            ];
+        }, $barang)];
+        $data = json_encode($data);
+        list($status, $response) = Helper::httpRequestJson('http://localhost/silmi/api/v1/cekstok', $data);
+        $response = json_decode($response);
+        $success = 0;
+        foreach($response->data as $produk) {
+            $rowCount = $this->model('Produk_model')->updateStok($produk->kode_produk, $produk->stok);
+            if ($rowCount > 0) {
+                $success += 1;
+            }
+        }
+        if ($status === 422) {
+            Flasher::setFlash($response->message, '', 'danger');
+            header('Location: '.BASEURL.'/produk');
+            exit;
+        }
         if ($idPelanggan == 1) {
             Flasher::setFlash('Keranjang gagal ditambah, silahkan login terlebih dahulu', '', 'danger');
             header('Location: '.BASEURL.'/produk');

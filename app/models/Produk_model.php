@@ -41,4 +41,12 @@ class Produk_model {
         $this->db->bind('idmodelbarangitem', $idmodelbarangitem);
         return $this->db->resultSet();
     }
+    public function updateStok($kodeBarang, $stok) {
+        $query = "UPDATE ms_barang SET stok=:stok WHERE kodebarang=:kodebarang";
+        $this->db->query($query);
+        $this->db->bind('stok', $stok);
+        $this->db->bind('kodebarang', $kodeBarang);
+        $this->db->execute();
+        return $this->db->rowCount();
+    }
 }

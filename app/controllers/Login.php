@@ -19,4 +19,10 @@ class Login extends Controller {
             exit;
         }
     }
+    public function logout() {
+        unset($_SESSION['idpelanggan']);
+        unset($_SESSION['namapelanggan']);
+        Flasher::setFlash('Logout berhasil!', '', 'success');
+        header('Location: '.BASEURL.'/produk');
+    }
 }

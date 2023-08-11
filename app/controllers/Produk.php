@@ -16,7 +16,6 @@ class Produk extends Controller {
         $produk = $this->model('Produk_model')->getBarang($idproduk, $ukuran, $warna);
         $produk = $this->groupBarang($produk);
         $data['produk'] = $this->cleanKeys($produk)[0];
-        echo json_encode($data['produk']);
         $this->view('templates/header');
         $this->view('templates/nav');
         $this->view('produk/detail', $data);
