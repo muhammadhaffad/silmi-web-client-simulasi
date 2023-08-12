@@ -1,12 +1,15 @@
 <?php
-class Order extends Controller {
-    public function index() {
+class Order extends Controller
+{
+    public function index()
+    {
         $this->view('templates/header');
         $this->view('templates/nav');
         $this->view('order/informasi');
         $this->view('templates/footer');
     }
-    public function informasi($idorder = null) {
+    public function informasi($idorder = null)
+    {
         if ($idorder !== null) {
             $order = $this->model('Order_model')->getOrderPelanggan($idorder);
             $data['order'] = $order;
@@ -19,7 +22,8 @@ class Order extends Controller {
         $this->view('order/informasi', $data);
         $this->view('templates/footer');
     }
-    public function simpan_informasi($idorder = null) {
+    public function simpan_informasi($idorder = null)
+    {
         if ($idorder !== null) {
             //TODO
         } else {
@@ -27,19 +31,20 @@ class Order extends Controller {
         }
         if (!empty($order)) {
             Flasher::setFlash('Informasi berhasil disimpan', '', 'success');
-            header('Location: '.BASEURL.'/order/rincian/'.$order['idorder']);
+            header('Location: ' . BASEURL . '/order/rincian/' . $order['idorder']);
             exit;
         } else {
         }
     }
-    public function rincian($idorder) {
+    public function rincian($idorder)
+    {
         if (empty($idorder)) {
-            header('Location: '.BASEURL.'/order/informasi');
+            header('Location: ' . BASEURL . '/order/informasi');
             exit;
         }
         $order = $this->model('Order_model')->getOrderPelanggan($idorder, 0);
-        if(empty($order)) {
-            header('Location: '.BASEURL.'/order/informasi');
+        if (empty($order)) {
+            header('Location: ' . BASEURL . '/order/informasi');
             exit;
         }
         $data['order'] = $this->groupOrder($order);
@@ -51,7 +56,8 @@ class Order extends Controller {
         $this->view('order/pesan', $data);
         $this->view('templates/footer');
     }
-    public function pesan_order($idorder) {
+    public function pesan_order($idorder)
+    {
         $itemKeranjang = $this->model('Keranjang_model')->getKeranjangPelanggan();
         $data = ['produk' => array_map(function ($item) {
             return [
@@ -63,7 +69,7 @@ class Order extends Controller {
         list($status, $response) = Helper::httpRequestJson('http://localhost/silmi/api/v1/cekstok', $data);
         $response = json_decode($response);
         $success = 0;
-        foreach($response->data as $produk) {
+        foreach ($response->data as $produk) {
             $rowCount = $this->model('Produk_model')->updateStok($produk->kode_produk, $produk->stok);
             if ($rowCount > 0) {
                 $success += 1;
@@ -71,13 +77,13 @@ class Order extends Controller {
         }
         if ($status === 422) {
             Flasher::setFlash($response->message, '', 'danger');
-            header('Location: '.BASEURL.'/produk');
+            header('Location: ' . BASEURL . '/produk');
             exit;
         }
         /* get data order */
         $order = $this->model('Order_model')->getOrderPelanggan($idorder, 0);
-        if(empty($order)) {
-            header('Location: '.BASEURL.'/order/informasi');
+        if (empty($order)) {
+            header('Location: ' . BASEURL . '/order/informasi');
             exit;
         }
         $order = $this->groupOrder($order);
@@ -103,25 +109,50 @@ class Order extends Controller {
         ];
         $data = json_encode($data);
         list($status, $response) = Helper::httpRequestJson('http://localhost/silmi/api/v1/nota/buat', $data);
-        echo json_encode($response);
-        exit;
-        $keranjangItemSukses = $this->model('Keranjang_model')->orderItemKeranjang($idorder);
-        
-        $data = [
-            'id_ekspedisi' => $_POST['id_kurir'],
-            'biayaongkir' => $ongkir[$_POST['id_kurir']],
-            'kodebank' => $_POST['bank']
-        ];
-        $orderSukses = $this->model('Order_model')->placeOrder($idorder, $data);
-        if ($orderSukses > 0) {
-            Flasher::setFlash('Berhasil memesan produk, silahkan melakukan pembayaran', '', 'success');
-            header('Location: '.BASEURL.'/produk');
+        $response = json_decode($response);
+        if ($status === 500) {
+            Flasher::setFlash($response->message, '', 'danger');
+            header('Location: javascript://history.go(-1)');
             exit;
         }
+        $success = 0;
+        if ($status === 422) {
+            foreach ($response->data as $produk) {
+                $row = $this->model('Produk_model')->updateStok($produk->kode_produk, $produk->stok);
+                if ($row > 0) {
+                    $success += 1;
+                }
+            }
+            Flasher::setFlash($response->message, '', 'danger');
+            header('Location: javascript://history.go(-1)');
+            exit;
+        }
+        if ($status === 201) {
+            $keranjangItemSukses = $this->model('Keranjang_model')->orderItemKeranjang($idorder);
+            $data = [
+                'id_ekspedisi' => $_POST['id_kurir'],
+                'biayaongkir' => $ongkir[$_POST['id_kurir']],
+                'kodebank' => $_POST['bank'],
+                'idorderprodusen' => $response->data->no_nota
+            ];
+            $orderSukses = $this->model('Order_model')->placeOrder($idorder, $data);
+            foreach ($response->data->produk_detail as $produk) {
+                $row = $this->model('Produk_model')->updateStok($produk->kode_produk, $produk->sisa_stok);
+                if ($row > 0) {
+                    $success += 1;
+                }
+            }
+            if ($orderSukses > 0) {
+                Flasher::setFlash('Berhasil memesan produk, silahkan melakukan pembayaran', '', 'success');
+                header('Location: ' . BASEURL . '/produk');
+                exit;
+            }
+        }
     }
-    private function cleanKeys(&$array) {
+    private function cleanKeys(&$array)
+    {
         $array = array_values($array);
-        
+
         foreach ($array as $key => &$value) {
             foreach ($value as $k => &$v) {
                 if (is_array($v)) {
@@ -131,7 +162,8 @@ class Order extends Controller {
         }
         return $array;
     }
-    private function groupBarang($produk) {
+    private function groupBarang($produk)
+    {
         foreach ($produk as $produkItem) {
             /* $groupKey = implode('_', array($produkItem['idpelanggan'], $produkItem['idmodelbarang'], $produkItem['namamodel'], $produkItem['deskripsi'])); */
             $groupKey = $produkItem['idmodelbarang'];
@@ -173,10 +205,11 @@ class Order extends Controller {
         }
         return $dataGrouped;
     }
-    private function groupOrder($orders) {
+    private function groupOrder($orders)
+    {
         foreach ($orders as $order) {
             $idorder = $order['idorder'];
-            if(!isset($dataGrouped[$idorder])) {
+            if (!isset($dataGrouped[$idorder])) {
                 $dataGrouped[$idorder]['idorder'] = $order['idorder'];
                 $dataGrouped[$idorder]['idpelanggan'] = $order['idpelanggan'];
                 $dataGrouped[$idorder]['namacustomer'] = $order['namacustomer'];

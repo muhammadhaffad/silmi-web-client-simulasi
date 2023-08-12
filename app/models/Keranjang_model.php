@@ -22,8 +22,16 @@ class Keranjang_model {
         $query = "SELECT * FROM ". $this->view ." WHERE idpelanggan=:idpelanggan ORDER BY idkeranjang";
         $this->db->query($query);
         $this->db->bind('idpelanggan', $idPelanggan);
-        $this->db->execute();
         return $this->db->resultSet();
+    }
+    public function isExistItemKeranjang($idmodelbarangitem) {
+        $idPelanggan = $_SESSION['idpelanggan'];
+        $query = "SELECT 1 FROM ". $this->view ." WHERE idmodelbarangitem=:idmodelbarangitem AND idpelanggan=:idpelanggan LIMIT 1";
+        $this->db->query($query);
+        $this->db->bind('idpelanggan', $idPelanggan);
+        $this->db->bind('idmodelbarangitem', $idmodelbarangitem);
+        $this->db->execute();
+        return $this->db->rowCount();
     }
     public function tambahJumlah($idkeranjang) {
         $idPelanggan = $_SESSION['idpelanggan'];

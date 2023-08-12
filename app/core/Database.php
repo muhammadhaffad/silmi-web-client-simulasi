@@ -73,4 +73,8 @@ class Database {
     {
         return $this->stmt->rowCount();
     }
+
+    public function debug() {
+        $this->stmt->debugDumpParams();
+    }
 }

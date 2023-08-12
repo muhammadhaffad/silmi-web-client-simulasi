@@ -1,5 +1,15 @@
 <?php
 class Keranjang extends Controller {
+    public function __construct()
+    {
+        /* Jika belum login, tapi tambah keranjang */
+        $idPelanggan = $_SESSION['idpelanggan'];
+        if ($idPelanggan == 1) {
+            Flasher::setFlash('Keranjang gagal ditambah, silahkan login terlebih dahulu', '', 'danger');
+            header('Location: '.BASEURL.'/produk');
+            exit;
+        }
+    }
     public function index() {
         $produk = $this->model('Keranjang_model')->getKeranjangPelanggan();
         $produk = $this->cleanKeys($this->groupBarang($produk));
@@ -10,9 +20,8 @@ class Keranjang extends Controller {
         $this->view('templates/footer');
     }
     public function tambah() {
-        $idPelanggan = $_SESSION['idpelanggan'];
+        /* Request API Cek Stok */
         $barang = $this->model('Produk_model')->getBarangItem($_POST['idmodelbarang'], $_POST['produk_item']);
-        $stokBarang = array_column($barang, 'stokbarangitem');
         $data = ['produk' => array_map(function ($item) {
             return [
                 'kode_produk' => $item['kodebarang'],
@@ -22,6 +31,8 @@ class Keranjang extends Controller {
         $data = json_encode($data);
         list($status, $response) = Helper::httpRequestJson('http://localhost/silmi/api/v1/cekstok', $data);
         $response = json_decode($response);
+
+        /* Update stok sesuai data dari API */
         $success = 0;
         foreach($response->data as $produk) {
             $rowCount = $this->model('Produk_model')->updateStok($produk->kode_produk, $produk->stok);
@@ -29,16 +40,16 @@ class Keranjang extends Controller {
                 $success += 1;
             }
         }
+
+        /* Redirect ke produk jika error */
         if ($status === 422) {
             Flasher::setFlash($response->message, '', 'danger');
             header('Location: '.BASEURL.'/produk');
             exit;
         }
-        if ($idPelanggan == 1) {
-            Flasher::setFlash('Keranjang gagal ditambah, silahkan login terlebih dahulu', '', 'danger');
-            header('Location: '.BASEURL.'/produk');
-            exit;
-        }
+
+        /* Cek stok */
+        $stokBarang = array_column($barang, 'stokbarangitem');
         foreach($stokBarang as $stok) {
             if (!isset($_temp[$stok])) {
                 $_temp[$stok] = $stok;
@@ -49,15 +60,27 @@ class Keranjang extends Controller {
                 }
             }
         }
+
+        /* Jika produk yang dipesan sudah ada di keranjang */
+        $row = $this->model('Keranjang_model')->isExistItemKeranjang($_POST['produk_item']);
+        if ($row > 0) {
+            Flasher::setFlash('Produk sudah ada di keranjang', '', 'warning');
+            header('Location: '.BASEURL.'/keranjang');
+            exit;
+        }
+
+        /* Memasukkan produk item ke keranjang */
         $row = $this->model('Keranjang_model')->insertKeranjang([
             'jumlah' => $_POST['jumlah'],
             'idmodelbarangitem' => $_POST['produk_item']
         ]);
         if ($row > 0) {
+            /* Jika sukses */
             Flasher::setFlash('Produk berhasil dimasukkan ke keranjang', '', 'success');
             header('Location: '.BASEURL.'/produk');
             exit;
         } else {
+            /* Jika gagal masuk keranjang */
             Flasher::setFlash('Produk gagal dimasukkan ke keranjang', 'ditambahkan', 'danger');
             header('Location: '.BASEURL.'/produk');
             exit;

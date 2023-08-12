@@ -35,12 +35,34 @@ class Order_model {
     }
     public function placeOrder($idorder, $data) {
         $idPelanggan = $_SESSION['idpelanggan'];
-        $query = "UPDATE tr_order SET idekspedisi=:idekspedisi, biayaongkir=:biayaongkir, kodebank=:kodebank, grandtotal=total+:biayaongkir, isselesai=1 WHERE idorder=:idorder AND idpelanggan=:idpelanggan";
+        $query = "UPDATE tr_order SET idorderprodusen=:idorderprodusen, idekspedisi=:idekspedisi, biayaongkir=:biayaongkir, kodebank=:kodebank, grandtotal=total+:biayaongkir, isselesai=1 WHERE idorder=:idorder AND idpelanggan=:idpelanggan";
         $this->db->query($query);
         $this->db->bind('idekspedisi', $data['id_ekspedisi']);
         $this->db->bind('biayaongkir', $data['biayaongkir']);
         $this->db->bind('kodebank', $data['kodebank']);
+        $this->db->bind('idorderprodusen', $data['idorderprodusen']);
         $this->db->bind('idpelanggan', $idPelanggan);
+        $this->db->bind('idorder', $idorder);
+        $this->db->execute();
+        return $this->db->rowCount();
+    }
+    public function updateOrder($idorderprodusen, $data) {
+        $query = "UPDATE ".$this->table." SET totalprodusen=:totalprodusen, grandtotalprodusen=:grandtotalprodusen, biayaongkirprodusen=:biayaongkirprodusen, noresi=:noresi WHERE idorderprodusen=:idorderprodusen RETURNING idorder";
+        $this->db->query($query);
+        $this->db->bind('totalprodusen', $data['totalprodusen']);
+        $this->db->bind('grandtotalprodusen', $data['grandtotalprodusen']);
+        $this->db->bind('biayaongkirprodusen', $data['biayaongkirprodusen']);
+        $this->db->bind('noresi', $data['noresi']);
+        $this->db->bind('idorderprodusen', (int)$idorderprodusen);
+        $this->db->single();
+    }
+    public function updateOrderDetail($idorder, $kodebarang, $data) {
+        $query = "UPDATE tr_orderdetail SET diskonprodusen=:diskonprodusen, hargaprodusen=:hargaprodusen, totalprodusen=:totalprodusen WHERE idorder=:idorder AND kodebarang=:kodebarang";
+        $this->db->query($query);
+        $this->db->bind('diskonprodusen', $data['diskonprodusen']);
+        $this->db->bind('hargaprodusen', $data['hargaprodusen']);
+        $this->db->bind('totalprodusen', $data['totalprodusen']);
+        $this->db->bind('kodebarang', $kodebarang);
         $this->db->bind('idorder', $idorder);
         $this->db->execute();
         return $this->db->rowCount();
