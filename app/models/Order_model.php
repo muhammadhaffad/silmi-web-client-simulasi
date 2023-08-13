@@ -63,7 +63,7 @@ class Order_model {
         $this->db->bind('hargaprodusen', $data['hargaprodusen']);
         $this->db->bind('totalprodusen', $data['totalprodusen']);
         $this->db->bind('kodebarang', $kodebarang);
-        $this->db->bind('idorder', $idorder);
+        $this->db->bind('idorder', (int)$idorder);
         $this->db->execute();
         return $this->db->rowCount();
     }

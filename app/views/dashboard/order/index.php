@@ -15,6 +15,7 @@
                 ?>
                 <p class="mb-0"><?= $kurir[$order['idekspedisi']] ?> - Rp.<?=$order['biayaongkir']?></p>
                 <p class="mb-0">Rp.<?= $order['grandtotal'] ?></p>
+                <h6>NO RESI: <?=$order['noresi'] ?: '--BELUM ADA NO RESI--'?></h6>
                 <a href="<?=BASEURL.'/dashboard/order_detail/'.$order['idorder']?>" class="mt-2 btn btn-primary">Lihat Detail</a>
             </div>
         </div>
